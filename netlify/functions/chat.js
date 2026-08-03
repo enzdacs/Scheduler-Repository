@@ -79,18 +79,31 @@ exports.handler = async (event) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents,
-        generationConfig: {
-          temperature: 0.4,
-          responseMimeType: "application/json"
-        }
-      })
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents,
+      generationConfig: {
+        temperature: 0.4,
+        responseMimeType: "application/json"
+      },
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+      ]
+    })
     });
 
     if (!resp.ok) {
-      const errText = await resp.text();
-      return { statusCode: 502, body: JSON.stringify({ error: `Gemini API error: ${errText}` }) };
+      let message = `Gemini API returned ${resp.status}`;
+      try {
+        const errorData = await resp.json();
+        message = errorData?.error?.message || message;
+      } catch {
+        message = (await resp.text()) || message;
+      }
+      console.error("Gemini API error:", message);
+      return { statusCode: resp.status, body: JSON.stringify({ error: message }) };
     }
 
     const data = await resp.json();
