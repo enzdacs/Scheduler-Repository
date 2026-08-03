@@ -1,0 +1,9 @@
+{
+  "name": "aurora-calendar-ai",
+  "version": "1.0.0",
+  "description": "Glass-textured calendar, notepad, and AI scheduling assistant. Static frontend + Firebase + Gemini via Netlify Functions.",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
